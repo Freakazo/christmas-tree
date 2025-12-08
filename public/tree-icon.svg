@@ -1,0 +1,7 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Simple Christmas Tree Icon -->
+  <rect width="512" height="512" fill="#10b981"/>
+  <path d="M256 80 L400 240 L360 240 L480 360 L440 360 L480 480 L32 480 L72 360 L32 360 L152 240 L112 240 Z" fill="#065f46"/>
+  <path d="M256 80 L380 220 L340 220 L460 340 L420 340 L460 460 L52 460 L92 340 L52 340 L172 220 L132 220 Z" fill="#10b981"/>
+  <rect x="236" y="420" width="40" height="60" fill="#92400e"/>
+</svg>
