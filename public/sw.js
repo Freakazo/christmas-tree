@@ -1,6 +1,6 @@
 // Simple service worker for offline support
 const CACHE_NAME = 'christmas-tree-designer-v1';
-const BASE_PATH = '/chistmas/';
+const BASE_PATH = '/christmas-tree/';
 const urlsToCache = [
   BASE_PATH,
   BASE_PATH + 'index.html',
