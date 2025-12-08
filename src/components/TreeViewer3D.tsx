@@ -43,7 +43,9 @@ export function TreeViewer3D({ calculation, rotationAngle, viewMode }: TreeViewe
         
         {/* Tree pieces */}
         {calculation.pieces.map((piece, index) => {
-          const yPosition = (index * piece.height) / 100; // Convert to scene units
+          // Add 1% gap between layers for better visibility
+          const gapPerLayer = (piece.height * 0.01) / 100; // 1% of height in scene units
+          const yPosition = (index * piece.height) / 100 + (index * gapPerLayer); // Convert to scene units with gap
           const rotation = viewMode === 'rotated' ? index * rotationAngle : 0;
           
           return (
