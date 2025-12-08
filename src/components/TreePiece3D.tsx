@@ -1,8 +1,8 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Mesh } from 'three';
 import { TreePiece } from '../utils/treeCalculations';
 import { AngledWoodPiece } from './AngledWoodPiece';
-import { getWoodTexture, getWoodNormalMap, PINE_COLORS } from '../utils/woodTexture';
+import { getWoodTexture, getWoodNormalMap, generateTexturesAsync, PINE_COLORS } from '../utils/woodTexture';
 
 interface TreePiece3DProps {
   piece: TreePiece;
@@ -14,10 +14,18 @@ interface TreePiece3DProps {
 export function TreePiece3D({ piece, position, rotation, onHover }: TreePiece3DProps) {
   const meshRef = useRef<Mesh>(null);
   const [hovered, setHovered] = useState(false);
+  const [texturesReady, setTexturesReady] = useState(false);
 
-  // Use shared singleton textures - created once for all pieces
-  const woodTexture = getWoodTexture();
-  const normalMap = getWoodNormalMap();
+  // Start generating textures asynchronously on mount
+  useEffect(() => {
+    generateTexturesAsync(() => {
+      setTexturesReady(true);
+    });
+  }, []);
+
+  // Get textures (will be null initially, then populated once ready)
+  const woodTexture = texturesReady ? getWoodTexture() : null;
+  const normalMap = texturesReady ? getWoodNormalMap() : null;
 
   const rotationRadians = (rotation * Math.PI) / 180;
 
@@ -50,9 +58,9 @@ export function TreePiece3D({ piece, position, rotation, onHover }: TreePiece3DP
       />
       <meshStandardMaterial
         color={hovered ? PINE_COLORS.hover : PINE_COLORS.base}
-        map={woodTexture}
-        normalMap={normalMap}
-        normalScale={[0.3, 0.3]}
+        map={woodTexture || undefined}
+        normalMap={normalMap || undefined}
+        normalScale={texturesReady ? [0.3, 0.3] : undefined}
         roughness={0.8}
         metalness={0.0}
       />

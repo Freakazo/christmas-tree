@@ -3,6 +3,8 @@ import * as THREE from 'three';
 // Singleton texture instances - created once and reused
 let woodTextureInstance: THREE.CanvasTexture | null = null;
 let normalMapInstance: THREE.CanvasTexture | null = null;
+let isGenerating = false;
+let textureReadyCallbacks: (() => void)[] = [];
 
 /**
  * Creates a procedural wood texture
@@ -151,10 +153,7 @@ export const PINE_COLORS = {
  * Get or create the shared wood texture (singleton pattern)
  * This ensures we only generate the texture once, improving performance
  */
-export function getWoodTexture(): THREE.CanvasTexture {
-  if (!woodTextureInstance) {
-    woodTextureInstance = createWoodTexture();
-  }
+export function getWoodTexture(): THREE.CanvasTexture | null {
   return woodTextureInstance;
 }
 
@@ -162,9 +161,51 @@ export function getWoodTexture(): THREE.CanvasTexture {
  * Get or create the shared normal map (singleton pattern)
  * This ensures we only generate the normal map once, improving performance
  */
-export function getWoodNormalMap(): THREE.CanvasTexture {
-  if (!normalMapInstance) {
-    normalMapInstance = createWoodNormalMap();
-  }
+export function getWoodNormalMap(): THREE.CanvasTexture | null {
   return normalMapInstance;
+}
+
+/**
+ * Check if textures are ready
+ */
+export function areTexturesReady(): boolean {
+  return woodTextureInstance !== null && normalMapInstance !== null;
+}
+
+/**
+ * Generate textures asynchronously in the background
+ * This allows the UI to load immediately with solid colors
+ */
+export function generateTexturesAsync(onReady?: () => void): void {
+  if (areTexturesReady()) {
+    // Textures already exist
+    if (onReady) onReady();
+    return;
+  }
+
+  // Add callback to list
+  if (onReady) {
+    textureReadyCallbacks.push(onReady);
+  }
+
+  // If already generating, just wait for completion
+  if (isGenerating) {
+    return;
+  }
+
+  isGenerating = true;
+
+  // Generate textures in next tick to not block rendering
+  setTimeout(() => {
+    try {
+      woodTextureInstance = createWoodTexture();
+      normalMapInstance = createWoodNormalMap();
+      
+      // Notify all waiting callbacks
+      textureReadyCallbacks.forEach(callback => callback());
+      textureReadyCallbacks = [];
+    } finally {
+      isGenerating = false;
+    }
+  }, 0);
 }
