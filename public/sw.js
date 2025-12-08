@@ -1,10 +1,11 @@
 // Simple service worker for offline support
 const CACHE_NAME = 'christmas-tree-designer-v1';
+const BASE_PATH = '/chistmas/';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/tree-icon.svg'
+  BASE_PATH,
+  BASE_PATH + 'index.html',
+  BASE_PATH + 'manifest.json',
+  BASE_PATH + 'tree-icon.svg'
 ];
 
 self.addEventListener('install', (event) => {

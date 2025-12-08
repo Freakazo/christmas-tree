@@ -2,6 +2,8 @@
 
 A Progressive Web App to help you design and build a wooden Christmas tree made from stacked, rotatable wooden pieces.
 
+🌐 **[Live Demo](https://YOUR_USERNAME.github.io/chistmas/)** (Replace with your actual GitHub username after deployment)
+
 ## Features
 
 - **Interactive 3D Visualization**: View your tree design in real-time with React Three Fiber
@@ -133,6 +135,21 @@ The tree is constructed by:
 ├── vite.config.ts       # Vite configuration
 └── tailwind.config.js   # Tailwind CSS configuration
 ```
+
+## Deployment
+
+This project is configured for GitHub Pages deployment. See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed instructions, or [QUICK_DEPLOY.md](./QUICK_DEPLOY.md) for a quick start guide.
+
+**Quick deploy:**
+```bash
+git init
+git add .
+git commit -m "Initial commit"
+git remote add origin https://github.com/YOUR_USERNAME/chistmas.git
+git push -u origin master
+```
+
+Then enable GitHub Pages in your repository settings (Settings → Pages → Source: GitHub Actions).
 
 ## License
 
