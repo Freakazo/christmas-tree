@@ -1,8 +1,8 @@
-import { useRef, useState, useMemo } from 'react';
+import { useRef, useState } from 'react';
 import { Mesh } from 'three';
 import { TreePiece } from '../utils/treeCalculations';
 import { AngledWoodPiece } from './AngledWoodPiece';
-import { createWoodTexture, createWoodNormalMap, PINE_COLORS } from '../utils/woodTexture';
+import { getWoodTexture, getWoodNormalMap, PINE_COLORS } from '../utils/woodTexture';
 
 interface TreePiece3DProps {
   piece: TreePiece;
@@ -15,9 +15,9 @@ export function TreePiece3D({ piece, position, rotation, onHover }: TreePiece3DP
   const meshRef = useRef<Mesh>(null);
   const [hovered, setHovered] = useState(false);
 
-  // Create textures once and reuse
-  const woodTexture = useMemo(() => createWoodTexture(), []);
-  const normalMap = useMemo(() => createWoodNormalMap(), []);
+  // Use shared singleton textures - created once for all pieces
+  const woodTexture = getWoodTexture();
+  const normalMap = getWoodNormalMap();
 
   const rotationRadians = (rotation * Math.PI) / 180;
 

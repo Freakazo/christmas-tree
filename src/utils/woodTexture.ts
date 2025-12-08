@@ -1,12 +1,16 @@
 import * as THREE from 'three';
 
+// Singleton texture instances - created once and reused
+let woodTextureInstance: THREE.CanvasTexture | null = null;
+let normalMapInstance: THREE.CanvasTexture | null = null;
+
 /**
  * Creates a procedural wood texture
  * Generates a simple wood grain pattern for pine-like appearance
  */
 export function createWoodTexture(): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
-  const size = 512;
+  const size = 256;  // Reduced from 512 for faster generation
   canvas.width = size;
   canvas.height = size;
   
@@ -21,8 +25,8 @@ export function createWoodTexture(): THREE.CanvasTexture {
   ctx.fillStyle = baseColor;
   ctx.fillRect(0, 0, size, size);
   
-  // Add wood grain lines (vertical) - more prominent
-  const grainCount = 60;
+  // Add wood grain lines (vertical) - optimized for performance
+  const grainCount = 40;  // Reduced for faster generation
   for (let i = 0; i < grainCount; i++) {
     const x = (i / grainCount) * size;
     const waveAmplitude = 8 + Math.random() * 15;
@@ -33,7 +37,8 @@ export function createWoodTexture(): THREE.CanvasTexture {
     ctx.globalAlpha = 0.5 + Math.random() * 0.5;
     
     ctx.beginPath();
-    for (let y = 0; y < size; y++) {
+    // Sample every 2 pixels for performance
+    for (let y = 0; y < size; y += 2) {
       const offsetX = Math.sin(y * waveFrequency) * waveAmplitude;
       const xPos = x + offsetX;
       if (y === 0) {
@@ -45,13 +50,13 @@ export function createWoodTexture(): THREE.CanvasTexture {
     ctx.stroke();
   }
   
-  // Add some knots/imperfections - more visible
+  // Add some knots/imperfections - optimized
   ctx.globalAlpha = 0.6;
-  const knotCount = 4 + Math.floor(Math.random() * 5);
+  const knotCount = 3 + Math.floor(Math.random() * 3);  // Fewer knots for performance
   for (let i = 0; i < knotCount; i++) {
     const x = Math.random() * size;
     const y = Math.random() * size;
-    const radius = 15 + Math.random() * 25;
+    const radius = 15 + Math.random() * 20;
     
     const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
     gradient.addColorStop(0, darkGrainColor);
@@ -92,7 +97,7 @@ export function createWoodTexture(): THREE.CanvasTexture {
  */
 export function createWoodNormalMap(): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
-  const size = 512;
+  const size = 256;  // Reduced from 512 for faster generation
   canvas.width = size;
   canvas.height = size;
   
@@ -141,3 +146,25 @@ export const PINE_COLORS = {
   highlight: '#e8c89a', // Light cream - highlights
   hover: '#10b981',     // Emerald green - hover state (kept for UI)
 };
+
+/**
+ * Get or create the shared wood texture (singleton pattern)
+ * This ensures we only generate the texture once, improving performance
+ */
+export function getWoodTexture(): THREE.CanvasTexture {
+  if (!woodTextureInstance) {
+    woodTextureInstance = createWoodTexture();
+  }
+  return woodTextureInstance;
+}
+
+/**
+ * Get or create the shared normal map (singleton pattern)
+ * This ensures we only generate the normal map once, improving performance
+ */
+export function getWoodNormalMap(): THREE.CanvasTexture {
+  if (!normalMapInstance) {
+    normalMapInstance = createWoodNormalMap();
+  }
+  return normalMapInstance;
+}
