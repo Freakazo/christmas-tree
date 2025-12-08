@@ -1,7 +1,8 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useMemo } from 'react';
 import { Mesh } from 'three';
 import { TreePiece } from '../utils/treeCalculations';
 import { AngledWoodPiece } from './AngledWoodPiece';
+import { createWoodTexture, createWoodNormalMap, PINE_COLORS } from '../utils/woodTexture';
 
 interface TreePiece3DProps {
   piece: TreePiece;
@@ -13,6 +14,10 @@ interface TreePiece3DProps {
 export function TreePiece3D({ piece, position, rotation, onHover }: TreePiece3DProps) {
   const meshRef = useRef<Mesh>(null);
   const [hovered, setHovered] = useState(false);
+
+  // Create textures once and reuse
+  const woodTexture = useMemo(() => createWoodTexture(), []);
+  const normalMap = useMemo(() => createWoodNormalMap(), []);
 
   const rotationRadians = (rotation * Math.PI) / 180;
 
@@ -44,9 +49,12 @@ export function TreePiece3D({ piece, position, rotation, onHover }: TreePiece3DP
         cutAngle={piece.cutAngle}
       />
       <meshStandardMaterial
-        color={hovered ? '#10b981' : '#8b4513'}
-        roughness={0.7}
-        metalness={0.1}
+        color={hovered ? PINE_COLORS.hover : PINE_COLORS.base}
+        map={woodTexture}
+        normalMap={normalMap}
+        normalScale={[0.3, 0.3]}
+        roughness={0.8}
+        metalness={0.0}
       />
     </mesh>
   );

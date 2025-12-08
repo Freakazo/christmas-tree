@@ -104,6 +104,36 @@ export function AngledWoodPiece({ length, depth, height, cutAngle }: AngledWoodP
     // Set vertices
     geom.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
     
+    // Create UV coordinates for texture mapping
+    // Wood grain runs along the length (X-axis)
+    const uvs = new Float32Array([
+      // Bottom face (wood grain runs along length)
+      0, 0,  1, 0,  1, 1,
+      0, 0,  1, 1,  0, 1,
+      
+      // Top face (wood grain runs along length)
+      0, 0,  1, 1,  1, 0,
+      0, 0,  0, 1,  1, 1,
+      
+      // Front face (Z+) - wood grain vertical along piece
+      0, 0,  1, 0,  1, 1,
+      0, 0,  1, 1,  0, 1,
+      
+      // Back face (Z-) - wood grain vertical along piece
+      0, 0,  1, 1,  1, 0,
+      0, 0,  0, 1,  1, 1,
+      
+      // Right angled face (X+) - wood grain along height
+      0, 0,  0, 1,  1, 1,
+      0, 0,  1, 1,  1, 0,
+      
+      // Left angled face (X-) - wood grain along height
+      0, 0,  1, 0,  1, 1,
+      0, 0,  1, 1,  0, 1,
+    ]);
+    
+    geom.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+    
     // Compute normals for proper lighting
     geom.computeVertexNormals();
     

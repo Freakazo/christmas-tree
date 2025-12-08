@@ -2,7 +2,7 @@
 
 A Progressive Web App to help you design and build a wooden Christmas tree made from stacked, rotatable wooden pieces.
 
-🌐 **[Live Demo](https://YOUR_USERNAME.github.io/chistmas/)** (Replace with your actual GitHub username after deployment)
+🌐 **[Live Demo](https://YOUR_USERNAME.github.io/christmas-tree/)** (Replace with your actual GitHub username after deployment)
 
 ## Features
 
@@ -145,7 +145,7 @@ This project is configured for GitHub Pages deployment. See [DEPLOYMENT.md](./DE
 git init
 git add .
 git commit -m "Initial commit"
-git remote add origin https://github.com/YOUR_USERNAME/chistmas.git
+git remote add origin https://github.com/YOUR_USERNAME/christmas-tree.git
 git push -u origin master
 ```
 
