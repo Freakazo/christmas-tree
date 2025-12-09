@@ -75,13 +75,13 @@ export function generateTexturesAsync(onReady?: () => void): void {
       if (woodTextureInstance) {
         woodTextureInstance.wrapS = THREE.RepeatWrapping;
         woodTextureInstance.wrapT = THREE.RepeatWrapping;
-        woodTextureInstance.repeat.set(4, 4);
+        woodTextureInstance.repeat.set(2, 2); // Larger grain scale (half the tiles)
       }
       
       if (normalMapInstance) {
         normalMapInstance.wrapS = THREE.RepeatWrapping;
         normalMapInstance.wrapT = THREE.RepeatWrapping;
-        normalMapInstance.repeat.set(2, 2);
+        normalMapInstance.repeat.set(1, 1);
       }
       
       // Notify all waiting callbacks

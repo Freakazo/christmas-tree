@@ -19,11 +19,16 @@ export interface TreePiece {
 
 export interface TreeCalculation {
   pieces: TreePiece[];
-  numberOfLayers: number;
-  actualHeight: number;
+  numberOfLayers: number;           // usable layers after reserving the top
+  totalLayers: number;              // includes the reserved star platform layer
+  actualHeight: number;             // height after removing the star platform
   cutAngleDegrees: number;
+  reservedTopPiece: TreePiece | null;
+  warnings: string[];
   stockMaterialNeeded: {
     totalLinearMeters: number;
+    usableLinearMeters: number;
+    starPlatformLinearMeters: number;
     numberOfStockPieces: number;
   };
 }
@@ -37,36 +42,38 @@ export function calculateTree(
   manualAngleOverride?: number
 ): TreeCalculation {
   // Number of layers based on target height and layer thickness
-  const numberOfLayers = Math.floor(tree.targetHeight / stock.height);
-  const actualHeight = numberOfLayers * stock.height;
+  const totalLayers = Math.floor(tree.targetHeight / stock.height);
+  const taperHeight = totalLayers * stock.height;
 
-  // Calculate the cut angle
-  // The tree forms a triangle from center to edge
-  // From center to edge is baseWidth/2
-  // tan(angle) = height / (baseWidth/2) = 2 * height / baseWidth
-  let cutAngleDegrees: number;
-  
-  if (manualAngleOverride !== undefined) {
-    // Use manual override if provided
-    cutAngleDegrees = manualAngleOverride;
-  } else {
-    // Calculate automatically
-    const cutAngleRadians = Math.atan((2 * actualHeight) / tree.baseWidth);
-    cutAngleDegrees = (cutAngleRadians * 180) / Math.PI;
+  const warnings: string[] = [];
+  if (totalLayers < 2) {
+    warnings.push(
+      'Need at least two layers to leave a flat platform for the tree topper. Increase the target height or use thinner stock.'
+    );
   }
 
-  // Calculate piece lengths
-  // Each piece gets progressively shorter as we go up
-  const pieces: TreePiece[] = [];
-  
-  for (let i = 0; i < numberOfLayers; i++) {
-    // Height at this layer
-    const layerHeight = i * stock.height;
-    
-    // Width at this layer (linear taper)
-    const widthAtLayer = tree.baseWidth * (1 - layerHeight / actualHeight);
-    
-    pieces.push({
+  // Calculate the cut angle using the full taper height so the profile would come to a point
+  let cutAngleDegrees: number;
+  if (manualAngleOverride !== undefined) {
+    cutAngleDegrees = manualAngleOverride;
+  } else {
+    if (taperHeight === 0 || tree.baseWidth === 0) {
+      cutAngleDegrees = 0;
+    } else {
+      const cutAngleRadians = Math.atan((2 * taperHeight) / tree.baseWidth);
+      cutAngleDegrees = (cutAngleRadians * 180) / Math.PI;
+    }
+  }
+
+  // Calculate piece lengths for the full taper profile
+  const allPieces: TreePiece[] = [];
+  for (let i = 0; i < totalLayers; i++) {
+    const layerHeight = taperHeight === 0 ? 0 : i * stock.height;
+    const widthAtLayer = taperHeight === 0
+      ? tree.baseWidth
+      : tree.baseWidth * (1 - layerHeight / taperHeight);
+
+    allPieces.push({
       layerNumber: i,
       length: widthAtLayer,
       cutAngle: cutAngleDegrees,
@@ -75,18 +82,35 @@ export function calculateTree(
     });
   }
 
-  // Calculate total material needed
-  const totalLinearLength = pieces.reduce((sum, piece) => sum + piece.length, 0);
+  // Reserve the top piece as a flat star platform and remove it from the visual stack
+  const reservedTopPiece = allPieces.length > 0 ? allPieces[allPieces.length - 1] : null;
+  const usablePieces = reservedTopPiece ? allPieces.slice(0, -1) : allPieces;
+
+  const numberOfLayers = usablePieces.length;
+  const actualHeight = numberOfLayers * stock.height;
+
+  // Calculate material usage, ensuring the reserved top piece still counts toward stock
+  const usableLinearLength = usablePieces.reduce((sum, piece) => sum + piece.length, 0);
+  const starPlatformLength = reservedTopPiece?.length ?? 0;
+  const totalLinearLength = usableLinearLength + starPlatformLength;
+
   const totalLinearMeters = totalLinearLength / 1000;
-  const numberOfStockPieces = Math.ceil(totalLinearLength / stock.length);
+  const usableLinearMeters = usableLinearLength / 1000;
+  const starPlatformLinearMeters = starPlatformLength / 1000;
+  const numberOfStockPieces = totalLinearLength === 0 ? 0 : Math.ceil(totalLinearLength / stock.length);
 
   return {
-    pieces,
+    pieces: usablePieces,
     numberOfLayers,
+    totalLayers,
     actualHeight,
     cutAngleDegrees,
+    reservedTopPiece,
+    warnings,
     stockMaterialNeeded: {
       totalLinearMeters,
+      usableLinearMeters,
+      starPlatformLinearMeters,
       numberOfStockPieces,
     },
   };

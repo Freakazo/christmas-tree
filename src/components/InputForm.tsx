@@ -46,7 +46,7 @@ export function InputForm({ onCalculate }: InputFormProps) {
   }, []);
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6" aria-live="polite">
       <div>
         <h3 className="text-lg font-semibold text-gray-800 mb-3">Stock Material (mm)</h3>
         <div className="space-y-3">

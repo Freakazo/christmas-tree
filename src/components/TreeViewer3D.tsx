@@ -23,8 +23,8 @@ export function TreeViewer3D({ calculation, rotationAngle, viewMode }: TreeViewe
     });
   }, []);
 
-  // Calculate the midpoint height of the tree in scene units
-  const treeHeightSceneUnits = calculation ? (calculation.actualHeight / 100) : 0;
+  // Calculate the midpoint height of the tree in scene units (usable stack only)
+  const treeHeightSceneUnits = calculation ? calculation.actualHeight / 100 : 0;
   const midHeight = treeHeightSceneUnits / 2;
 
   // Update camera target when calculation changes
@@ -43,6 +43,8 @@ export function TreeViewer3D({ calculation, rotationAngle, viewMode }: TreeViewe
     );
   }
 
+  const { pieces, reservedTopPiece } = calculation;
+
   return (
     <div className="w-full h-full relative">
       <Canvas camera={{ position: [15, midHeight + 5, 15], fov: 50 }}>
@@ -50,16 +52,16 @@ export function TreeViewer3D({ calculation, rotationAngle, viewMode }: TreeViewe
         <directionalLight position={[10, 10, 5]} intensity={1.2} />
         <directionalLight position={[-10, -10, -5]} intensity={0.5} />
         
-        {/* Tree pieces */}
-        {calculation.pieces.map((piece, index) => {
+        {/* Tree pieces (star platform removed from stack) */}
+        {pieces.map((piece, index) => {
           // Add 1% gap between layers for better visibility
           const gapPerLayer = (piece.height * 0.01) / 100; // 1% of height in scene units
-          const yPosition = (index * piece.height) / 100 + (index * gapPerLayer); // Convert to scene units with gap
+          const yPosition = (index * piece.height) / 100 + index * gapPerLayer; // Convert to scene units with gap
           const rotation = viewMode === 'rotated' ? index * rotationAngle : 0;
           
           return (
             <TreePiece3D
-              key={index}
+              key={piece.layerNumber}
               piece={piece}
               position={[0, yPosition, 0]}
               rotation={rotation}
@@ -103,6 +105,12 @@ export function TreeViewer3D({ calculation, rotationAngle, viewMode }: TreeViewe
           <p className="text-gray-600">Width: {hoveredPiece.depth.toFixed(1)} mm</p>
           <p className="text-gray-600">Height: {hoveredPiece.height.toFixed(1)} mm</p>
           <p className="text-gray-600">Cut Angle: {hoveredPiece.cutAngle.toFixed(2)}°</p>
+        </div>
+      )}
+
+      {reservedTopPiece && (
+        <div className="absolute top-4 right-4 bg-amber-100/90 text-amber-900 border border-amber-200 rounded-md px-3 py-2 text-xs font-medium">
+          Top layer reserved for star platform ({reservedTopPiece.length.toFixed(0)} mm)
         </div>
       )}
     </div>
