@@ -1,31 +1,40 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useMemo, useEffect } from 'react';
 import { Mesh } from 'three';
 import { TreePiece } from '../utils/treeCalculations';
 import { AngledWoodPiece } from './AngledWoodPiece';
-import { getWoodTexture, getWoodNormalMap, generateTexturesAsync, PINE_COLORS } from '../utils/woodTexture';
+import { getWoodTexture, getWoodNormalMap, PINE_COLORS } from '../utils/woodTexture';
 
 interface TreePiece3DProps {
   piece: TreePiece;
   position: [number, number, number];
   rotation: number; // rotation in degrees
   onHover: (piece: TreePiece | null) => void;
+  texturesReady: boolean; // Passed from parent to ensure all pieces update together
 }
 
-export function TreePiece3D({ piece, position, rotation, onHover }: TreePiece3DProps) {
+export function TreePiece3D({ piece, position, rotation, onHover, texturesReady }: TreePiece3DProps) {
   const meshRef = useRef<Mesh>(null);
   const [hovered, setHovered] = useState(false);
-  const [texturesReady, setTexturesReady] = useState(false);
 
-  // Start generating textures asynchronously on mount
+  // Get textures (memoized to ensure we get fresh references when ready)
+  const woodTexture = useMemo(() => texturesReady ? getWoodTexture() : null, [texturesReady]);
+  const normalMap = useMemo(() => texturesReady ? getWoodNormalMap() : null, [texturesReady]);
+
+  // Update material when textures become ready
   useEffect(() => {
-    generateTexturesAsync(() => {
-      setTexturesReady(true);
-    });
-  }, []);
-
-  // Get textures (will be null initially, then populated once ready)
-  const woodTexture = texturesReady ? getWoodTexture() : null;
-  const normalMap = texturesReady ? getWoodNormalMap() : null;
+    if (meshRef.current && meshRef.current.material) {
+      const material = meshRef.current.material as any;
+      if (texturesReady && woodTexture && normalMap) {
+        material.map = woodTexture;
+        material.normalMap = normalMap;
+        material.normalScale.set(0.3, 0.3);
+        // Use white color when textured so texture shows at full brightness
+        // (color and map multiply together in Three.js)
+        material.color.setHex(hovered ? 0x10b981 : 0xffffff);
+        material.needsUpdate = true;
+      }
+    }
+  }, [texturesReady, woodTexture, normalMap, hovered]);
 
   const rotationRadians = (rotation * Math.PI) / 180;
 
@@ -57,7 +66,8 @@ export function TreePiece3D({ piece, position, rotation, onHover }: TreePiece3DP
         cutAngle={piece.cutAngle}
       />
       <meshStandardMaterial
-        color={hovered ? PINE_COLORS.hover : PINE_COLORS.base}
+        key={texturesReady ? 'textured' : 'solid'}
+        color={texturesReady ? (hovered ? PINE_COLORS.hover : 0xffffff) : (hovered ? PINE_COLORS.hover : PINE_COLORS.base)}
         map={woodTexture || undefined}
         normalMap={normalMap || undefined}
         normalScale={texturesReady ? [0.3, 0.3] : undefined}

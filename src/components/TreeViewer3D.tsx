@@ -3,6 +3,7 @@ import { OrbitControls, Grid } from '@react-three/drei';
 import { useState, useRef, useEffect } from 'react';
 import { TreePiece3D } from './TreePiece3D';
 import { TreeCalculation, TreePiece } from '../utils/treeCalculations';
+import { generateTexturesAsync } from '../utils/woodTexture';
 
 interface TreeViewer3DProps {
   calculation: TreeCalculation | null;
@@ -12,7 +13,15 @@ interface TreeViewer3DProps {
 
 export function TreeViewer3D({ calculation, rotationAngle, viewMode }: TreeViewer3DProps) {
   const [hoveredPiece, setHoveredPiece] = useState<TreePiece | null>(null);
+  const [texturesReady, setTexturesReady] = useState(false);
   const controlsRef = useRef<any>(null);
+
+  // Start loading textures immediately when component mounts
+  useEffect(() => {
+    generateTexturesAsync(() => {
+      setTexturesReady(true);
+    });
+  }, []);
 
   // Calculate the midpoint height of the tree in scene units
   const treeHeightSceneUnits = calculation ? (calculation.actualHeight / 100) : 0;
@@ -37,9 +46,9 @@ export function TreeViewer3D({ calculation, rotationAngle, viewMode }: TreeViewe
   return (
     <div className="w-full h-full relative">
       <Canvas camera={{ position: [15, midHeight + 5, 15], fov: 50 }}>
-        <ambientLight intensity={0.5} />
-        <directionalLight position={[10, 10, 5]} intensity={1} />
-        <directionalLight position={[-10, -10, -5]} intensity={0.3} />
+        <ambientLight intensity={0.8} />
+        <directionalLight position={[10, 10, 5]} intensity={1.2} />
+        <directionalLight position={[-10, -10, -5]} intensity={0.5} />
         
         {/* Tree pieces */}
         {calculation.pieces.map((piece, index) => {
@@ -55,6 +64,7 @@ export function TreeViewer3D({ calculation, rotationAngle, viewMode }: TreeViewe
               position={[0, yPosition, 0]}
               rotation={rotation}
               onHover={setHoveredPiece}
+              texturesReady={texturesReady}
             />
           );
         })}
