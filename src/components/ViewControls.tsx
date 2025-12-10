@@ -1,3 +1,5 @@
+import { EngravingConfig } from '../types/engraving';
+
 interface ViewControlsProps {
   viewMode: 'flat' | 'rotated';
   onViewModeChange: (mode: 'flat' | 'rotated') => void;
@@ -7,6 +9,8 @@ interface ViewControlsProps {
   useManualAngle: boolean;
   manualCutAngle?: number;
   onAngleOverrideChange: (enabled: boolean, angle?: number) => void;
+  engravingConfig: EngravingConfig;
+  onEngravingConfigChange: (config: EngravingConfig) => void;
 }
 
 export function ViewControls({
@@ -18,6 +22,8 @@ export function ViewControls({
   useManualAngle,
   manualCutAngle,
   onAngleOverrideChange,
+  engravingConfig,
+  onEngravingConfigChange,
 }: ViewControlsProps) {
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-4">
@@ -112,6 +118,87 @@ export function ViewControls({
             <p className="text-xs text-gray-500 mt-1">
               Override the calculated angle (0-90°)
             </p>
+          </div>
+        )}
+      </div>
+
+      {/* Laser Engraving Controls */}
+      <div className="border-t border-gray-200 pt-4">
+        <div className="flex items-center justify-between mb-3">
+          <label className="text-sm font-medium text-gray-700">
+            Laser Engraving
+          </label>
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              checked={engravingConfig.enabled}
+              onChange={(e) => onEngravingConfigChange({
+                ...engravingConfig,
+                enabled: e.target.checked,
+              })}
+              className="sr-only peer"
+            />
+            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-emerald-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+          </label>
+        </div>
+        
+        {engravingConfig.enabled && (
+          <div className="space-y-3">
+            {/* Face Selection */}
+            <div>
+              <p className="text-xs font-medium text-gray-600 mb-2">Engrave on:</p>
+              <div className="grid grid-cols-2 gap-2">
+                {(['top', 'bottom', 'front', 'back', 'left', 'right'] as const).map((face) => (
+                  <label key={face} className="flex items-center text-xs">
+                    <input
+                      type="checkbox"
+                      checked={engravingConfig.targets[face]}
+                      onChange={(e) => onEngravingConfigChange({
+                        ...engravingConfig,
+                        targets: {
+                          ...engravingConfig.targets,
+                          [face]: e.target.checked,
+                        },
+                      })}
+                      className="mr-2 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                    />
+                    <span className="capitalize">{face}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            
+            {/* Repeat Controls */}
+            <div>
+              <p className="text-xs font-medium text-gray-600 mb-2">Pattern Repeat:</p>
+              <div className="space-y-2">
+                {(['top', 'bottom', 'front', 'back', 'left', 'right'] as const).map((face) => (
+                  engravingConfig.targets[face] && (
+                    <div key={face} className="flex items-center justify-between">
+                      <label className="text-xs capitalize w-16">{face}:</label>
+                      <input
+                        type="range"
+                        min="1"
+                        max="10"
+                        step="1"
+                        value={engravingConfig.repeat[face]}
+                        onChange={(e) => onEngravingConfigChange({
+                          ...engravingConfig,
+                          repeat: {
+                            ...engravingConfig.repeat,
+                            [face]: parseInt(e.target.value),
+                          },
+                        })}
+                        className="flex-1 mx-2 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
+                      />
+                      <span className="text-xs text-gray-600 w-8 text-right">
+                        {engravingConfig.repeat[face]}x
+                      </span>
+                    </div>
+                  )
+                ))}
+              </div>
+            </div>
           </div>
         )}
       </div>

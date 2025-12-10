@@ -4,14 +4,16 @@ import { useState, useRef, useEffect } from 'react';
 import { TreePiece3D } from './TreePiece3D';
 import { TreeCalculation, TreePiece } from '../utils/treeCalculations';
 import { generateTexturesAsync } from '../utils/woodTexture';
+import { EngravingConfig } from '../types/engraving';
 
 interface TreeViewer3DProps {
   calculation: TreeCalculation | null;
   rotationAngle: number; // degrees of rotation between pieces
   viewMode: 'flat' | 'rotated';
+  engravingConfig: EngravingConfig;
 }
 
-export function TreeViewer3D({ calculation, rotationAngle, viewMode }: TreeViewer3DProps) {
+export function TreeViewer3D({ calculation, rotationAngle, viewMode, engravingConfig }: TreeViewer3DProps) {
   const [hoveredPiece, setHoveredPiece] = useState<TreePiece | null>(null);
   const [texturesReady, setTexturesReady] = useState(false);
   const controlsRef = useRef<any>(null);
@@ -67,6 +69,7 @@ export function TreeViewer3D({ calculation, rotationAngle, viewMode }: TreeViewe
               rotation={rotation}
               onHover={setHoveredPiece}
               texturesReady={texturesReady}
+              engravingConfig={engravingConfig}
             />
           );
         })}

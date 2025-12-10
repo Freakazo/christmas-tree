@@ -9,6 +9,7 @@ import {
   TreeCalculation,
   calculateTree,
 } from './utils/treeCalculations';
+import { EngravingConfig, DEFAULT_ENGRAVING_CONFIG } from './types/engraving';
 
 function App() {
   const [calculation, setCalculation] = useState<TreeCalculation | null>(null);
@@ -18,6 +19,7 @@ function App() {
   const [useManualAngle, setUseManualAngle] = useState<boolean>(false);
   const [stockDims, setStockDims] = useState<StockDimensions | null>(null);
   const [treeDims, setTreeDims] = useState<TreeDimensions | null>(null);
+  const [engravingConfig, setEngravingConfig] = useState<EngravingConfig>(DEFAULT_ENGRAVING_CONFIG);
 
   const handleCalculate = (stock: StockDimensions, tree: TreeDimensions) => {
     setStockDims(stock);
@@ -74,6 +76,8 @@ function App() {
                 useManualAngle={useManualAngle}
                 manualCutAngle={manualCutAngle}
                 onAngleOverrideChange={handleAngleOverrideChange}
+                engravingConfig={engravingConfig}
+                onEngravingConfigChange={setEngravingConfig}
               />
             )}
           </div>
@@ -85,6 +89,7 @@ function App() {
                 calculation={calculation}
                 rotationAngle={rotationAngle}
                 viewMode={viewMode}
+                engravingConfig={engravingConfig}
               />
             </div>
 

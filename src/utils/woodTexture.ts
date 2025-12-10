@@ -32,6 +32,35 @@ export function getWoodNormalMap(): THREE.Texture | null {
 }
 
 /**
+ * Load an engraving texture from a URL
+ * Uses caching to avoid loading the same texture multiple times
+ */
+export function loadEngravingTexture(
+  url: string,
+  onLoad: (texture: THREE.Texture) => void,
+  onError?: (error: Error) => void
+): void {
+  const textureLoader = new THREE.TextureLoader();
+  
+  textureLoader.load(
+    url,
+    (texture) => {
+      // Configure texture for engraving
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      // Keep original aspect ratio - repeat will be set per-face
+      texture.colorSpace = THREE.SRGBColorSpace;
+      onLoad(texture);
+    },
+    undefined,
+    (error) => {
+      console.error('Failed to load engraving texture:', error);
+      if (onError) onError(error as Error);
+    }
+  );
+}
+
+/**
  * Check if textures are ready
  */
 export function areTexturesReady(): boolean {
