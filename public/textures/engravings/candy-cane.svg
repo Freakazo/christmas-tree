@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- Candy cane hook -->
+  <path d="M 40 20 Q 30 20 30 30 Q 30 40 40 40 L 40 80" fill="none" stroke="black" stroke-width="8" stroke-linecap="round"/>
+  <!-- Stripes -->
+  <path d="M 38 25 Q 32 25 32 30" fill="none" stroke="white" stroke-width="3"/>
+  <path d="M 40 45 L 40 52" fill="none" stroke="white" stroke-width="3"/>
+  <path d="M 40 58 L 40 65" fill="none" stroke="white" stroke-width="3"/>
+  <path d="M 40 71 L 40 78" fill="none" stroke="white" stroke-width="3"/>
+</svg>

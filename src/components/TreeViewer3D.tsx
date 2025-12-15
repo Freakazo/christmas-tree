@@ -95,7 +95,7 @@ export function TreeViewer3D({ calculation, rotationAngle, viewMode, engravingCo
           enablePan={true}
           enableZoom={true}
           enableRotate={true}
-          minDistance={5}
+          minDistance={0.5}
           maxDistance={50}
         />
       </Canvas>

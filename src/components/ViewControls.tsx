@@ -168,35 +168,49 @@ export function ViewControls({
               </div>
             </div>
             
-            {/* Repeat Controls */}
+            {/* Density Control */}
             <div>
-              <p className="text-xs font-medium text-gray-600 mb-2">Pattern Repeat:</p>
-              <div className="space-y-2">
-                {(['top', 'bottom', 'front', 'back', 'left', 'right'] as const).map((face) => (
-                  engravingConfig.targets[face] && (
-                    <div key={face} className="flex items-center justify-between">
-                      <label className="text-xs capitalize w-16">{face}:</label>
-                      <input
-                        type="range"
-                        min="1"
-                        max="10"
-                        step="1"
-                        value={engravingConfig.repeat[face]}
-                        onChange={(e) => onEngravingConfigChange({
-                          ...engravingConfig,
-                          repeat: {
-                            ...engravingConfig.repeat,
-                            [face]: parseInt(e.target.value),
-                          },
-                        })}
-                        className="flex-1 mx-2 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
-                      />
-                      <span className="text-xs text-gray-600 w-8 text-right">
-                        {engravingConfig.repeat[face]}x
-                      </span>
-                    </div>
-                  )
-                ))}
+              <label className="block text-xs font-medium text-gray-600 mb-2">
+                Density: {engravingConfig.density}
+              </label>
+              <input
+                type="range"
+                min="1"
+                max="20"
+                step="1"
+                value={engravingConfig.density}
+                onChange={(e) => onEngravingConfigChange({
+                  ...engravingConfig,
+                  density: parseInt(e.target.value),
+                })}
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
+              />
+              <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <span>Sparse</span>
+                <span>Dense</span>
+              </div>
+            </div>
+            
+            {/* Item Size Control */}
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-2">
+                Item Size: {engravingConfig.itemSize}px
+              </label>
+              <input
+                type="range"
+                min="20"
+                max="100"
+                step="5"
+                value={engravingConfig.itemSize}
+                onChange={(e) => onEngravingConfigChange({
+                  ...engravingConfig,
+                  itemSize: parseInt(e.target.value),
+                })}
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
+              />
+              <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <span>Small</span>
+                <span>Large</span>
               </div>
             </div>
           </div>

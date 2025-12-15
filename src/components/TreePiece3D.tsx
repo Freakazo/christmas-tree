@@ -2,7 +2,7 @@ import { useRef, useState, useMemo, useEffect } from 'react';
 import { Mesh, DoubleSide, MultiplyBlending, Texture } from 'three';
 import { TreePiece } from '../utils/treeCalculations';
 import { AngledWoodPiece } from './AngledWoodPiece';
-import { getWoodTexture, getWoodNormalMap, PINE_COLORS, loadEngravingTexture } from '../utils/woodTexture';
+import { getWoodTexture, getWoodNormalMap, PINE_COLORS, generateRandomEngravingTexture } from '../utils/woodTexture';
 import { EngravingConfig } from '../types/engraving';
 
 interface TreePiece3DProps {
@@ -17,29 +17,16 @@ interface TreePiece3DProps {
 export function TreePiece3D({ piece, position, rotation, onHover, texturesReady, engravingConfig }: TreePiece3DProps) {
   const meshRef = useRef<Mesh>(null);
   const [hovered, setHovered] = useState(false);
-  const [engravingTexture, setEngravingTexture] = useState<Texture | null>(null);
+  const [engravingTextures, setEngravingTextures] = useState<Map<string, Texture>>(new Map());
 
   // Get textures (memoized to ensure we get fresh references when ready)
   const woodTexture = useMemo(() => texturesReady ? getWoodTexture() : null, [texturesReady]);
   const normalMap = useMemo(() => texturesReady ? getWoodNormalMap() : null, [texturesReady]);
 
-  // Load engraving texture when enabled
+  // Clear engraving textures when config changes
   useEffect(() => {
-    if (engravingConfig.enabled && engravingConfig.imageUrl) {
-      loadEngravingTexture(
-        engravingConfig.imageUrl,
-        (texture) => {
-          setEngravingTexture(texture);
-        },
-        (error) => {
-          console.error('Failed to load engraving:', error);
-          setEngravingTexture(null);
-        }
-      );
-    } else {
-      setEngravingTexture(null);
-    }
-  }, [engravingConfig.enabled, engravingConfig.imageUrl]);
+    setEngravingTextures(new Map());
+  }, [engravingConfig.enabled, engravingConfig.density, engravingConfig.itemSize]);
 
   // Update material when textures become ready
   useEffect(() => {
@@ -57,6 +44,39 @@ export function TreePiece3D({ piece, position, rotation, onHover, texturesReady,
     }
   }, [texturesReady, woodTexture, normalMap, hovered]);
 
+  // Generate engraving texture for a specific face
+  const getEngravingTextureForFace = (
+    faceType: string,
+    faceWidth: number,
+    faceHeight: number
+  ): Texture | null => {
+    const key = `${faceType}-${faceWidth}-${faceHeight}-${engravingConfig.density}-${engravingConfig.itemSize}`;
+    
+    if (engravingTextures.has(key)) {
+      return engravingTextures.get(key)!;
+    }
+
+    // Generate texture asynchronously with higher resolution for sharper images
+    // Use 200 pixels per scene unit for high quality
+    const textureWidth = Math.max(1024, Math.min(4096, Math.floor(faceWidth * 200)));
+    const textureHeight = Math.max(1024, Math.min(4096, Math.floor(faceHeight * 200)));
+    
+    generateRandomEngravingTexture(
+      textureWidth,
+      textureHeight,
+      engravingConfig.density,
+      engravingConfig.itemSize,
+      (texture) => {
+        setEngravingTextures(prev => new Map(prev).set(key, texture));
+      },
+      (error) => {
+        console.error(`Failed to generate engraving for ${faceType}:`, error);
+      }
+    );
+
+    return null; // Will be available after async generation
+  };
+
   // Helper to create overlay mesh for a specific face
   const createEngravingOverlay = (
     faceType: 'top' | 'bottom' | 'front' | 'back' | 'left' | 'right',
@@ -64,34 +84,16 @@ export function TreePiece3D({ piece, position, rotation, onHover, texturesReady,
     faceRotation: [number, number, number],
     faceSize: [number, number]
   ) => {
-    if (!engravingConfig.enabled || !engravingConfig.targets[faceType] || !engravingTexture) {
+    if (!engravingConfig.enabled || !engravingConfig.targets[faceType]) {
       return null;
     }
 
-    const repeat = engravingConfig.repeat[faceType];
     const [faceWidth, faceHeight] = faceSize;
+    const texture = getEngravingTextureForFace(faceType, faceWidth, faceHeight);
     
-    // Calculate aspect ratio to preserve the engraving image proportions
-    const image = engravingTexture.image as HTMLImageElement | undefined;
-    const imageAspect = image ? image.width / image.height : 1;
-    const faceAspect = faceWidth / faceHeight;
-    
-    let repeatX = repeat;
-    let repeatY = repeat;
-    
-    // Adjust repeat to maintain aspect ratio
-    if (imageAspect > faceAspect) {
-      // Image is wider than face
-      repeatY = repeat * (imageAspect / faceAspect);
-    } else {
-      // Image is taller than face
-      repeatX = repeat * (faceAspect / imageAspect);
+    if (!texture) {
+      return null; // Texture not ready yet
     }
-
-    // Clone texture and set repeat for this specific face
-    const faceEngravingTexture = engravingTexture.clone();
-    faceEngravingTexture.repeat.set(repeatX, repeatY);
-    faceEngravingTexture.needsUpdate = true;
 
     return (
       <mesh
@@ -101,7 +103,7 @@ export function TreePiece3D({ piece, position, rotation, onHover, texturesReady,
       >
         <planeGeometry args={[faceWidth, faceHeight]} />
         <meshBasicMaterial
-          map={faceEngravingTexture}
+          map={texture}
           transparent={true}
           opacity={0.7}
           blending={MultiplyBlending}
@@ -164,7 +166,7 @@ export function TreePiece3D({ piece, position, rotation, onHover, texturesReady,
       </mesh>
 
       {/* Engraving overlays */}
-      {engravingConfig.enabled && engravingTexture && (
+      {engravingConfig.enabled && (
         <>
           {/* Top face */}
           {createEngravingOverlay(
